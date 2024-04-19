@@ -527,8 +527,7 @@ public class DeviceInfoActivity extends BaseActivity implements RadioGroup.OnChe
         dialog.setConfirm(R.string.ok);
         dialog.setOnAlertConfirmListener(() -> {
             isUpgrading = false;
-            ProbeMokoSupport.getInstance().disConnectBle();
-            EventBus.getDefault().post("refresh");
+            setResult(RESULT_OK);
             finish();
         });
         dialog.show(getSupportFragmentManager());
@@ -599,7 +598,7 @@ public class DeviceInfoActivity extends BaseActivity implements RadioGroup.OnChe
 
         @Override
         public void onProgressChanged(@NonNull String deviceAddress, int percent, float speed, float avgSpeed, int currentPart, int partsTotal) {
-            String progress = String.format("Progress:%probe%%", percent);
+            String progress = String.format("Progress:%d%%", percent);
             XLog.i(progress);
             mDFUDialog.setMessage(progress);
         }
