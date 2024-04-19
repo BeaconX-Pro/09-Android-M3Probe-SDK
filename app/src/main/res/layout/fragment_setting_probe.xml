@@ -8,19 +8,35 @@
     tools:background="@color/white_ffffff">
 
     <TextView
+        android:id="@+id/tvSensor"
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:clickable="true"
+        android:drawableRight="@drawable/arrow_right"
+        android:gravity="center_vertical"
+        android:onClick="onSensor"
+        android:text="Sensor configurations"
+        android:textColor="@color/black_333333"
+        android:textSize="15sp" />
+
+    <View
+        android:id="@+id/lineSensor"
+        style="@style/divider_line" />
+
+    <TextView
         android:id="@+id/tvAcc"
         android:layout_width="match_parent"
         android:layout_height="50dp"
         android:clickable="true"
         android:drawableRight="@drawable/arrow_right"
         android:gravity="center_vertical"
-        android:onClick="onAcc"
-        android:text="3-axis accelerometer"
+        android:onClick="onAdv"
+        android:text="ADV configurations"
         android:textColor="@color/black_333333"
         android:textSize="15sp" />
 
     <View
-        android:id="@+id/lineAcc"
+        android:id="@+id/lineAdv"
         style="@style/divider_line" />
 
     <TextView
@@ -36,32 +52,48 @@
 
     <View style="@style/divider_line" />
 
-    <TextView
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/llResetBeacon"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:drawableRight="@drawable/arrow_right"
-        android:gravity="center_vertical"
-        android:onClick="onResetBeacon"
-        android:text="Reset Beacon"
-        android:textColor="@color/black_333333"
-        android:textSize="15sp" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-    <View style="@style/divider_line" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:drawableRight="@drawable/arrow_right"
+            android:gravity="center_vertical"
+            android:onClick="onResetBeacon"
+            android:text="Reset Beacon"
+            android:textColor="@color/black_333333"
+            android:textSize="15sp" />
 
-    <TextView
-        android:id="@+id/tvModifyPwd"
+        <View style="@style/divider_line" />
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:id="@+id/llModifyPwd"
         android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:drawableRight="@drawable/arrow_right"
-        android:gravity="center_vertical"
-        android:onClick="onModifyPassword"
-        android:text="Modify password"
-        android:textColor="@color/black_333333"
-        android:textSize="15sp" />
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
 
-    <View
-        android:id="@+id/lineModifyPwd"
-        style="@style/divider_line" />
+        <TextView
+            android:id="@+id/tvModifyPwd"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:drawableRight="@drawable/arrow_right"
+            android:gravity="center_vertical"
+            android:onClick="onModifyPassword"
+            android:text="Modify password"
+            android:textColor="@color/black_333333"
+            android:textSize="15sp" />
+
+        <View
+            android:id="@+id/lineModifyPwd"
+            style="@style/divider_line" />
+    </androidx.appcompat.widget.LinearLayoutCompat>
 
     <TextView
         android:layout_width="match_parent"
@@ -74,20 +106,4 @@
         android:textSize="15sp" />
 
     <View style="@style/divider_line" />
-
-    <TextView
-        android:id="@+id/tvPowerSave"
-        android:layout_width="match_parent"
-        android:layout_height="50dp"
-        android:clickable="true"
-        android:drawableRight="@drawable/arrow_right"
-        android:gravity="center_vertical"
-        android:onClick="onPowerSavingConfig"
-        android:text="Power saving configuration"
-        android:textColor="@color/black_333333"
-        android:textSize="15sp" />
-
-    <View
-        android:id="@+id/linePowerSave"
-        style="@style/divider_line" />
 </LinearLayout>

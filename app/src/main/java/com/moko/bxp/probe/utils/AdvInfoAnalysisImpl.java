@@ -33,7 +33,7 @@ public class AdvInfoAnalysisImpl implements DeviceInfoAnalysis<AdvInfo> {
         int frameType = bytes[0] & 0xFF; // 0x80 M3 Probe
         int waterLeakage = bytes[1];
         int temperature = MokoUtils.byte2short(Arrays.copyOfRange(bytes, 2, 4));
-        int humidity = MokoUtils.byte2short(Arrays.copyOfRange(bytes, 4, 6));
+        int humidity = MokoUtils.toInt(Arrays.copyOfRange(bytes, 4, 6));
         int tofRanging = MokoUtils.toInt(Arrays.copyOfRange(bytes, 6, 8));
         // avoid repeat
         AdvInfo advInfo;

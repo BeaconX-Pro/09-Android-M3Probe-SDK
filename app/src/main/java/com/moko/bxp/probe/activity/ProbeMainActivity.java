@@ -15,6 +15,9 @@ import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -24,7 +27,9 @@ import com.elvishew.xlog.XLog;
 import com.moko.ble.lib.MokoConstants;
 import com.moko.ble.lib.event.ConnectStatusEvent;
 import com.moko.ble.lib.event.OrderTaskResponseEvent;
+import com.moko.ble.lib.task.OrderTask;
 import com.moko.ble.lib.task.OrderTaskResponse;
+import com.moko.ble.lib.utils.MokoUtils;
 import com.moko.bxp.probe.AppConstants;
 import com.moko.bxp.probe.BuildConfig;
 import com.moko.bxp.probe.R;
@@ -45,7 +50,6 @@ import com.moko.support.probe.OrderTaskAssembler;
 import com.moko.support.probe.callback.MokoScanDeviceCallback;
 import com.moko.support.probe.entity.DeviceInfo;
 import com.moko.support.probe.entity.OrderCHAR;
-import com.moko.support.probe.entity.ParamsKeyEnum;
 
 import org.greenrobot.eventbus.EventBus;
 import org.greenrobot.eventbus.Subscribe;
@@ -69,7 +73,7 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
     private boolean isPasswordError;
     private AdvInfoAnalysisImpl advInfoAnalysisImpl;
     public static String PATH_LOGCAT;
-    private boolean enablePwd;
+    private boolean mInputPassword;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,6 +122,8 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
         }
     }
 
+
+    private String unLockResponse;
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -151,22 +157,33 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
             // 设备断开，通知页面更新
             dismissLoadingProgressDialog();
             dismissLoadingMessageDialog();
-            if (animation == null) {
+            if (!mInputPassword && animation == null) {
                 if (isPasswordError) {
                     isPasswordError = false;
                 } else {
-                    if (disconnectType == 1){
-                        disconnectType = 0;
-                    }else {
-                        ToastUtils.showToast(this, "Connection failed");
-                    }
+                    ToastUtils.showToast(ProbeMainActivity.this, "Connection failed");
                 }
-                if (null == animation) startScan();
+                startScan();
+            } else {
+                mInputPassword = false;
             }
         }
         if (MokoConstants.ACTION_DISCOVER_SUCCESS.equals(action)) {
             // 设备连接成功，通知页面更新
-            ProbeMokoSupport.getInstance().sendOrder(OrderTaskAssembler.getVerifyPasswordEnable());
+            dismissLoadingProgressDialog();
+            showLoadingMessageDialog();
+            mHandler.postDelayed(() -> {
+                if (TextUtils.isEmpty(mPassword)) {
+                    ArrayList<OrderTask> orderTasks = new ArrayList<>();
+                    orderTasks.add(OrderTaskAssembler.getLockState());
+                    ProbeMokoSupport.getInstance().sendOrder(orderTasks.toArray(new OrderTask[]{}));
+                } else {
+                    XLog.i("锁定状态，获取unLock，解锁");
+                    ArrayList<OrderTask> orderTasks = new ArrayList<>();
+                    orderTasks.add(OrderTaskAssembler.getUnLock());
+                    ProbeMokoSupport.getInstance().sendOrder(orderTasks.toArray(new OrderTask[]{}));
+                }
+            }, 500);
         }
     }
 
@@ -174,85 +191,67 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
     public void onOrderTaskResponseEvent(OrderTaskResponseEvent event) {
         final String action = event.getAction();
         if (MokoConstants.ACTION_ORDER_TIMEOUT.equals(action)) {
-            ProbeMokoSupport.getInstance().disConnectBle();
         }
         if (MokoConstants.ACTION_ORDER_FINISH.equals(action)) {
-            dismissLoadingProgressDialog();
         }
         if (MokoConstants.ACTION_ORDER_RESULT.equals(action)) {
             OrderTaskResponse response = event.getResponse();
             OrderCHAR orderCHAR = (OrderCHAR) response.orderCHAR;
+            int responseType = response.responseType;
             byte[] value = response.responseValue;
-            if (orderCHAR == OrderCHAR.CHAR_PASSWORD) {
-                if (value.length == 5) {
-                    int header = value[0] & 0xFF;// 0xEB
-                    int flag = value[1] & 0xFF;// read or write
-                    int cmd = value[2] & 0xFF;
-                    ParamsKeyEnum configKeyEnum = ParamsKeyEnum.fromParamKey(cmd);
-                    if (header != 0xEB || null == configKeyEnum) return;
-                    int length = value[3] & 0xFF;
-                    if (configKeyEnum == ParamsKeyEnum.KEY_PASSWORD) {
-                        if (flag == 1 && length == 1) {
-                            int result = value[4] & 0xFF;
-                            dismissLoadingMessageDialog();
-                            if (result == 0xAA) {
-                                mSavedPassword = mPassword;
-                                SPUtiles.setStringValue(this, AppConstants.SP_KEY_SAVED_PASSWORD, mSavedPassword);
-                                XLog.i("Success");
-                                Intent intent = new Intent(this, DeviceInfoActivity.class);
-                                intent.putExtra("pwdEnable", enablePwd);
-                                startActivity(intent);
-                            } else {
-                                isPasswordError = true;
-                                ToastUtils.showToast(this, "Password incorrect！");
-                                ProbeMokoSupport.getInstance().disConnectBle();
-                            }
+            switch (orderCHAR) {
+                case CHAR_LOCK_STATE:
+                    String valueStr = MokoUtils.bytesToHexString(value);
+                    dismissLoadingMessageDialog();
+                    if ("00".equals(valueStr)) {
+                        ProbeMokoSupport.getInstance().disConnectBle();
+                        if (TextUtils.isEmpty(unLockResponse)) {
+                            mInputPassword = true;
+                            // 弹出密码框
+                            showPasswordDialog();
+                        } else {
+                            isPasswordError = true;
+                            unLockResponse = "";
+                            ToastUtils.showToast(ProbeMainActivity.this, "Password incorrect!");
                         }
-                    } else if (configKeyEnum == ParamsKeyEnum.KEY_VERIFY_PASSWORD_ENABLE) {
-                        if (flag == 0 && length == 1) {
-                            int enable = value[4] & 0xff;
-                            if (enable == 1) {
-                                // 开启验证
-                                enablePwd = true;
-                                //开启密码验证的监听
-                                showPasswordDialog();
-                            } else {
-                                enablePwd = false;
-                                Intent intent = new Intent(this, DeviceInfoActivity.class);
-                                intent.putExtra("pwdEnable", enablePwd);
-                                startActivity(intent);
-                            }
-                        }
+                    } else if ("02".equals(valueStr)) {
+                        // 不需要密码验证
+                        Intent deviceInfoIntent = new Intent(ProbeMainActivity.this, DeviceInfoActivity.class);
+                        deviceInfoIntent.putExtra(AppConstants.EXTRA_KEY_PASSWORD, mPassword);
+                        deviceInfoLauncher.launch(deviceInfoIntent);
+                    } else {
+                        // 解锁成功
+                        XLog.i("解锁成功");
+                        unLockResponse = "";
+                        mSavedPassword = mPassword;
+                        SPUtiles.setStringValue(this, AppConstants.SP_KEY_SAVED_PASSWORD, mSavedPassword);
+                        Intent deviceInfoIntent = new Intent(ProbeMainActivity.this, DeviceInfoActivity.class);
+                        deviceInfoIntent.putExtra(AppConstants.EXTRA_KEY_PASSWORD, mPassword);
+                        deviceInfoLauncher.launch(deviceInfoIntent);
                     }
-                }
-            }
-        } else if (MokoConstants.ACTION_CURRENT_DATA.equals(action)) {
-            //监听密码连接超时
-            OrderTaskResponse response = event.getResponse();
-            OrderCHAR orderCHAR = (OrderCHAR) response.orderCHAR;
-            byte[] value = response.responseValue;
-            if (orderCHAR == OrderCHAR.CHAR_DISCONNECT) {
-                if (null != value && value.length == 5) {
-                    disconnectType = value[4] & 0xff;
-                    if (disconnectType == 1) {
-                        //密码验证超时
-                        XLog.i("333333*******************type="+disconnectType);
-                        if (null != dialog && dialog.isAdded() && dialog.isVisible())
-                            dialog.dismiss();
-                        ToastUtils.showToast(this, "Password entry timed out！");
+                    break;
+                case CHAR_UNLOCK:
+                    if (responseType == OrderTask.RESPONSE_TYPE_READ) {
+                        unLockResponse = MokoUtils.bytesToHexString(value);
+                        XLog.i("返回的随机数：" + unLockResponse);
+                        ProbeMokoSupport.getInstance().sendOrder(OrderTaskAssembler.setUnLock(mPassword, value));
                     }
-                }
+                    if (responseType == OrderTask.RESPONSE_TYPE_WRITE) {
+                        ProbeMokoSupport.getInstance().sendOrder(OrderTaskAssembler.getLockState());
+                    }
+                    break;
             }
         }
     }
 
-    private int disconnectType;
+    private final ActivityResultLauncher<Intent> deviceInfoLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), this::onDeviceInfoResult);
 
-    @Subscribe(threadMode = ThreadMode.MAIN)
-    public void onRefresh(String flag) {
-        if ("refresh".equals(flag)) {
+    private void onDeviceInfoResult(ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK) {
             mPassword = "";
-            if (animation == null) startScan();
+            if (animation == null) {
+                startScan();
+            }
         }
     }
 
@@ -274,7 +273,7 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
             while (animation != null) {
                 runOnUiThread(() -> {
                     adapter.replaceData(advInfoList);
-                    mBind.tvDeviceNum.setText(String.format("DEVICE(%probe)", advInfoList.size()));
+                    mBind.tvDeviceNum.setText(String.format(Locale.getDefault(), "DEVICE(%d)", advInfoList.size()));
                 });
                 try {
                     Thread.sleep(500);
@@ -310,7 +309,6 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
                     if (!TextUtils.isEmpty(filterMac) && TextUtils.isEmpty(advInfo.mac)) {
                         iterator.remove();
                     } else if (!TextUtils.isEmpty(filterMac) && advInfo.mac.toLowerCase().replaceAll(":", "").contains(filterMac.toLowerCase())) {
-                        continue;
                     } else if (!TextUtils.isEmpty(filterMac) && !advInfo.mac.toLowerCase().replaceAll(":", "").contains(filterMac.toLowerCase(Locale.ROOT))) {
                         iterator.remove();
                     }
@@ -404,11 +402,9 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
         }
     }
 
-    private PasswordDialog dialog;
-
     private void showPasswordDialog() {
         // show password
-        dialog = new PasswordDialog();
+        PasswordDialog dialog = new PasswordDialog();
         dialog.setPassword(mSavedPassword);
         dialog.setOnPasswordClicked(new PasswordDialog.PasswordClickListener() {
             @Override
@@ -419,14 +415,20 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
                 }
                 XLog.i(password);
                 mPassword = password;
-                showLoadingMessageDialog();
-                mBind.ivRefresh.postDelayed(() -> ProbeMokoSupport.getInstance().sendOrder(OrderTaskAssembler.setPassword(password)), 200);
+                if (animation != null) {
+                    mHandler.removeMessages(0);
+                    mokoBleScanner.stopScanDevice();
+                }
+                showLoadingProgressDialog();
+                mBind.ivRefresh.postDelayed(() -> ProbeMokoSupport.getInstance().connDevice(mSelectedDeviceMac), 500);
             }
 
             @Override
             public void onDismiss() {
-                ProbeMokoSupport.getInstance().disConnectBle();
-                startScan();
+                unLockResponse = "";
+                if (animation == null) {
+                    startScan();
+                }
             }
         });
         dialog.show(getSupportFragmentManager());
@@ -536,4 +538,5 @@ public class ProbeMainActivity extends BaseActivity implements MokoScanDeviceCal
         if (isWindowLocked()) return;
         if (animation == null) startScan();
     }
+
 }

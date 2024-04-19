@@ -20,7 +20,7 @@ public class AppConstants {
     public static final String EXTRA_KEY_SLOT_TYPE = "EXTRA_KEY_SLOT_TYPE";
     public static final String EXTRA_KEY_SLOT_DATA = "EXTRA_KEY_SLOT_DATA";
     public static final String EXTRA_KEY_PASSWORD = "EXTRA_KEY_PASSWORD";
-    public static final String EXTRA_KEY_DEVICE_TYPE = "EXTRA_KEY_DEVICE_TYPE";
+    public static final String EXTRA_KEY_SENSOR_TYPE = "EXTRA_KEY_SENSOR_TYPE";
     public static final String EXTRA_KEY_TRIGGER_TYPE = "EXTRA_KEY_TRIGGER_TYPE";
     public static final String EXTRA_KEY_TRIGGER_DATA = "EXTRA_KEY_TRIGGER_DATA";
     public static final String EXTRA_KEY_PASSWORD_VERIFICATION = "EXTRA_KEY_PASSWORD_VERIFICATION";
@@ -40,4 +40,7 @@ public class AppConstants {
 
     // result_code
     public static final int RESULT_CONN_DISCONNECTED = 2;
+    public static final int SENSOR_TYPE_TEMP = 0;
+    public static final int SENSOR_TYPE_TH = 1;
+    public static final int SENSOR_TYPE_WATER_LEAK = 2;
 }

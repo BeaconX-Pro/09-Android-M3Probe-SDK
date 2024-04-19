@@ -11,6 +11,8 @@ import com.moko.bxp.probe.databinding.FragmentDeviceProbeBinding;
 public class DeviceFragment extends Fragment {
     private FragmentDeviceProbeBinding mBind;
 
+    private String macAddress;
+
     public DeviceFragment() {
     }
 
@@ -21,6 +23,7 @@ public class DeviceFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mBind = FragmentDeviceProbeBinding.inflate(inflater, container, false);
+        mBind.tvMacAddress.setText(macAddress);
         return mBind.getRoot();
     }
 
@@ -28,31 +31,33 @@ public class DeviceFragment extends Fragment {
         mBind.tvBattery.setText(battery + "mV");
     }
 
-    public void setMacAddress(String macAddress){
-        mBind.tvMacAddress.setText(macAddress);
+    public void setMacAddress(String macAddress) {
+        this.macAddress = macAddress;
+        if (mBind != null)
+            mBind.tvMacAddress.setText(macAddress);
     }
 
-    public void setProductMode(String productMode){
+    public void setProductMode(String productMode) {
         mBind.tvDeviceModel.setText(productMode);
     }
 
-    public void setSoftwareVersion(String softwareVersion){
+    public void setSoftwareVersion(String softwareVersion) {
         mBind.tvSoftwareVersion.setText(softwareVersion);
     }
 
-    public void setFirmwareVersion(String firmwareVersion){
+    public void setFirmwareVersion(String firmwareVersion) {
         mBind.tvFirmwareVersion.setText(firmwareVersion);
     }
 
-    public void setHardwareVersion(String hardwareVersion){
+    public void setHardwareVersion(String hardwareVersion) {
         mBind.tvHardwareVersion.setText(hardwareVersion);
     }
 
-    public void setProductDate(String productDate){
+    public void setProductDate(String productDate) {
         mBind.tvProductDate.setText(productDate);
     }
 
-    public void setManufacturer(String manufacturer){
+    public void setManufacturer(String manufacturer) {
         mBind.tvManufacturer.setText(manufacturer);
     }
 }

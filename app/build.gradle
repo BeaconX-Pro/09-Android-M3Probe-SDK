@@ -13,8 +13,8 @@ android {
         }
         minSdkVersion 18
         targetSdkVersion 33
-        versionCode 2
-        versionName "1.0.1"
+        versionCode 1
+        versionName "1.0.0"
 
         def formatDate = new Date().format("yyyyMMddHHmm")
         setProperty("archivesBaseName", "M3Probe_${versionName}_${formatDate}")

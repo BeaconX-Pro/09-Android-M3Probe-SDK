@@ -123,6 +123,8 @@ public class ProbeMokoSupport extends MokoBleLib {
     public boolean orderResponseValid(BluetoothGattCharacteristic characteristic, OrderTask orderTask) {
         final UUID responseUUID = characteristic.getUuid();
         final OrderCHAR orderCHAR = (OrderCHAR) orderTask.orderCHAR;
+        if (responseUUID.equals(OrderCHAR.CHAR_PARAMS_RESULT.getUuid()))
+            return true;
         return responseUUID.equals(orderCHAR.getUuid());
     }
 
@@ -134,8 +136,14 @@ public class ProbeMokoSupport extends MokoBleLib {
         if (responseUUID.equals(OrderCHAR.CHAR_DISCONNECT.getUuid())) {
             orderCHAR = OrderCHAR.CHAR_DISCONNECT;
         }
-        if (responseUUID.equals(OrderCHAR.CHAR_ACC.getUuid())) {
-            orderCHAR = OrderCHAR.CHAR_ACC;
+        if (responseUUID.equals(OrderCHAR.CHAR_TEMP_NOTIFY.getUuid())) {
+            orderCHAR = OrderCHAR.CHAR_TEMP_NOTIFY;
+        }
+        if (responseUUID.equals(OrderCHAR.CHAR_TH_NOTIFY.getUuid())) {
+            orderCHAR = OrderCHAR.CHAR_TH_NOTIFY;
+        }
+        if (responseUUID.equals(OrderCHAR.CHAR_WATER_LEAK_NOTIFY.getUuid())) {
+            orderCHAR = OrderCHAR.CHAR_WATER_LEAK_NOTIFY;
         }
         if (orderCHAR == null)
             return false;
@@ -150,20 +158,33 @@ public class ProbeMokoSupport extends MokoBleLib {
         return true;
     }
 
-    public void enableAccNotify() {
+    public void enableTHNotify() {
         if (mBleConfig != null)
-            mBleConfig.enableAccNotify();
+            mBleConfig.enableTHNotify();
     }
 
-    public void disableAccNotify() {
+    public void disableTHNotify() {
         if (mBleConfig != null)
-            mBleConfig.disableAccNotify();
+            mBleConfig.disableTHNotify();
     }
 
-    public ArrayList<ExportData> exportSingleEvents;
-    public StringBuilder storeSingleEventString;
-    public ArrayList<ExportData> exportDoubleEvents;
-    public StringBuilder storeDoubleEventString;
-    public ArrayList<ExportData> exportLongEvents;
-    public StringBuilder storeLongEventString;
+    public void enableTempNotify() {
+        if (mBleConfig != null)
+            mBleConfig.enableTempNotify();
+    }
+
+    public void disableTempNotify() {
+        if (mBleConfig != null)
+            mBleConfig.disableTempNotify();
+    }
+
+    public void enableWaterLeakNotify() {
+        if (mBleConfig != null)
+            mBleConfig.enableWaterLeakNotify();
+    }
+
+    public void disableWaterLeakNotify() {
+        if (mBleConfig != null)
+            mBleConfig.disableWaterLeakNotify();
+    }
 }

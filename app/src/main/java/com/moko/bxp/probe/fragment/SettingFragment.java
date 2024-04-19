@@ -26,20 +26,15 @@ public class SettingFragment extends Fragment {
         return mBind.getRoot();
     }
 
-    public void setAcc(int accEnable) {
-        if (accEnable == 0) {
-            //无三轴
-            mBind.tvAcc.setVisibility(View.GONE);
-            mBind.lineAcc.setVisibility(View.GONE);
-            mBind.tvPowerSave.setVisibility(View.GONE);
-            mBind.linePowerSave.setVisibility(View.GONE);
-        }
-    }
 
     public void setPwdShown(boolean showPwd) {
         this.showPwd = showPwd;
         if (null == mBind) return;
-        mBind.tvModifyPwd.setVisibility(showPwd ? View.VISIBLE : View.GONE);
-        mBind.lineModifyPwd.setVisibility(showPwd ? View.VISIBLE : View.GONE);
+        mBind.llModifyPwd.setVisibility(showPwd ? View.VISIBLE : View.GONE);
+    }
+
+    public void setResetShown(int enable) {
+        if (null == mBind) return;
+        mBind.llResetBeacon.setVisibility(enable == 1 ? View.VISIBLE : View.GONE);
     }
 }

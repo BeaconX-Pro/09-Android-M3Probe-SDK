@@ -1,0 +1,60 @@
+<androidx.appcompat.widget.LinearLayoutCompat xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white_ffffff"
+    android:orientation="vertical">
+
+
+    <TextView
+        android:id="@+id/tvTempProbe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_temp"
+        android:drawableRight="@drawable/arrow_right"
+        android:drawablePadding="10dp"
+        android:gravity="center_vertical"
+        android:onClick="onTempProbe"
+        android:padding="20dp"
+        android:text="Temperature Probe (PT100)"
+        android:textColor="@color/black_333333"
+        android:textSize="17sp" />
+
+    <View style="@style/divider_line" />
+
+    <TextView
+        android:id="@+id/tvTempHumidityProbe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_th"
+        android:drawableRight="@drawable/arrow_right"
+        android:drawablePadding="10dp"
+        android:gravity="center_vertical"
+        android:onClick="onTHProbe"
+        android:padding="20dp"
+        android:text="Temperature &amp; Humidity Probe"
+        android:textColor="@color/black_333333"
+        android:textSize="17sp" />
+
+    <View style="@style/divider_line" />
+
+    <TextView
+        android:id="@+id/tvWaterLeakProbe"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:drawableLeft="@drawable/ic_waterleak"
+        android:drawableRight="@drawable/arrow_right"
+        android:drawablePadding="10dp"
+        android:gravity="center_vertical"
+        android:onClick="onWaterLeakProbe"
+        android:padding="20dp"
+        android:text="Water leakage detection Probe"
+        android:textColor="@color/black_333333"
+        android:textSize="17sp" />
+
+    <View style="@style/divider_line" />
+
+</androidx.appcompat.widget.LinearLayoutCompat>

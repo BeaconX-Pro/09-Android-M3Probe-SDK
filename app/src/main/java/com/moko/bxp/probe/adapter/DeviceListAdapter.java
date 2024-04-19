@@ -1,15 +1,12 @@
 package com.moko.bxp.probe.adapter;
 
-import android.text.TextUtils;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-
 import com.chad.library.adapter.base.BaseQuickAdapter;
 import com.chad.library.adapter.base.BaseViewHolder;
+import com.moko.ble.lib.utils.MokoUtils;
 import com.moko.bxp.probe.R;
 import com.moko.bxp.probe.entity.AdvInfo;
+
+import java.util.Locale;
 
 public class DeviceListAdapter extends BaseQuickAdapter<AdvInfo, BaseViewHolder> {
     public DeviceListAdapter() {
@@ -18,30 +15,21 @@ public class DeviceListAdapter extends BaseQuickAdapter<AdvInfo, BaseViewHolder>
 
     @Override
     protected void convert(BaseViewHolder helper, AdvInfo item) {
-        helper.setText(R.id.tv_mac, item.mac);
+        helper.setText(R.id.tv_mac, String.format("MAC:%s", item.mac));
+        helper.setText(R.id.tv_name, item.name);
         helper.setText(R.id.tv_rssi, String.format("%ddBm", item.rssi));
         helper.setText(R.id.tv_interval_time, item.intervalTime == 0 ? "<->N/A" : String.format("<->%dms", item.intervalTime));
         helper.addOnClickListener(R.id.tv_connect);
         helper.setGone(R.id.tv_connect, item.connectState == 1);
-        helper.setText(R.id.tv_battery, "");
-        LinearLayout parent = helper.getView(R.id.ll_adv_info);
-        parent.removeAllViews();
-        if (item.advType == 2) {
-            View view = LayoutInflater.from(mContext).inflate(R.layout.layout_device_info_probe, null);
-            helper.setText(R.id.tv_battery, item.batterPercent < 0 ? "N/A" : (item.batterPercent * 10 + "%"));
-            TextView tvAdvChannel = view.findViewById(R.id.tvAdvChannel);
-            TextView tvAdvInterval = view.findViewById(R.id.tvAdvInterval);
-            TextView tvTxPower = view.findViewById(R.id.tvTxPower);
-            TextView tvAlarmStatus = view.findViewById(R.id.tvAlarmStatus);
-            TextView tvAlarmCount = view.findViewById(R.id.tvAlarmCount);
-            TextView tvTemp = view.findViewById(R.id.tvTemp);
-            tvAdvChannel.setText(TextUtils.isEmpty(item.deviceInfoMhz) ? "N/A" : item.deviceInfoMhz);
-            tvAdvInterval.setText(item.deviceInfoAdvInterval != -1 ? (item.deviceInfoAdvInterval + "ms") : "N/A");
-            tvTxPower.setText(TextUtils.isEmpty(item.deviceInfoTxPower) ? "N/A" : item.deviceInfoTxPower);
-            tvAlarmStatus.setText(TextUtils.isEmpty(item.alarmStatus) ? "N/A" : item.alarmStatus);
-            tvAlarmCount.setText(item.alarmCount != -1 ? String.valueOf(item.alarmCount) : "N/A");
-            tvTemp.setText(item.temperature != -1 ? (item.temperature + "℃") : "N/A");
-            parent.addView(view);
-        }
+        float temperature = item.temperature * 0.1f;
+        float humidity = item.humidity * 0.1f;
+        helper.setGone(R.id.layoutWaterLeakageStatus, item.waterLeakage != 0xFF);
+        helper.setText(R.id.tvWaterLeakStatus, item.waterLeakage == 0 ? "No" : "Yes");
+        helper.setGone(R.id.layoutTemperature, item.temperature != 0xFFFF);
+        helper.setText(R.id.tvTemp, String.format(Locale.getDefault(), "%s℃", MokoUtils.getDecimalFormat("0.#").format(temperature)));
+        helper.setGone(R.id.layoutHumidity, item.humidity != 0xFFFF);
+        helper.setText(R.id.tvHumidity, String.format(Locale.getDefault(), "%s%%RH", MokoUtils.getDecimalFormat("0.#").format(humidity)));
+        helper.setGone(R.id.layoutTofRanging, item.tofRanging != 0xFFFF);
+        helper.setText(R.id.tvTofRanging, String.format(Locale.getDefault(), "%dmm", item.tofRanging));
     }
 }

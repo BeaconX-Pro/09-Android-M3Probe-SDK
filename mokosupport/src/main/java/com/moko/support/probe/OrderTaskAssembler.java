@@ -1,19 +1,146 @@
 package com.moko.support.probe;
 
-import androidx.annotation.IntRange;
-
+import com.elvishew.xlog.XLog;
 import com.moko.ble.lib.task.OrderTask;
+import com.moko.ble.lib.utils.MokoUtils;
 import com.moko.support.probe.entity.ParamsKeyEnum;
+import com.moko.support.probe.task.GetAdvIntervalTask;
+import com.moko.support.probe.task.GetAdvSlotDataTask;
+import com.moko.support.probe.task.GetBatteryTask;
+import com.moko.support.probe.task.GetConnectableTask;
 import com.moko.support.probe.task.GetFirmwareRevisionTask;
 import com.moko.support.probe.task.GetHardwareRevisionTask;
+import com.moko.support.probe.task.GetLockStateTask;
 import com.moko.support.probe.task.GetManufacturerNameTask;
 import com.moko.support.probe.task.GetModelNumberTask;
+import com.moko.support.probe.task.GetTxPowerTask;
 import com.moko.support.probe.task.GetSerialNumberTask;
 import com.moko.support.probe.task.GetSoftwareRevisionTask;
+import com.moko.support.probe.task.GetUnlockTask;
 import com.moko.support.probe.task.ParamsTask;
-import com.moko.support.probe.task.PasswordTask;
+import com.moko.support.probe.task.ResetDeviceTask;
+import com.moko.support.probe.task.SetAdvIntervalTask;
+import com.moko.support.probe.task.SetAdvSlotDataTask;
+import com.moko.support.probe.task.SetConnectableTask;
+import com.moko.support.probe.task.SetLockStateTask;
+import com.moko.support.probe.task.SetTxPowerTask;
+import com.moko.support.probe.task.SetUnlockTask;
+
+import java.util.Arrays;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
+
+import androidx.annotation.IntRange;
 
 public class OrderTaskAssembler {
+
+    /**
+     * @Description 获取设备锁状态get lock state
+     */
+    public static OrderTask getLockState() {
+        GetLockStateTask task = new GetLockStateTask();
+        return task;
+    }
+
+    /**
+     * @Description 设置设备锁方式
+     */
+    public static OrderTask setLockStateDirected(int enable) {
+        SetLockStateTask task = new SetLockStateTask();
+        task.setData(MokoUtils.toByteArray(enable, 1));
+        return task;
+    }
+
+    /**
+     * @Description 设置设备锁状态set lock state
+     */
+    public static OrderTask setLockState(String newPassword) {
+        if (passwordBytes != null) {
+            XLog.i("旧密码：" + MokoUtils.bytesToHexString(passwordBytes));
+            byte[] bt1 = newPassword.getBytes();
+            byte[] newPasswordBytes = new byte[16];
+            for (int i = 0; i < newPasswordBytes.length; i++) {
+                if (i < bt1.length) {
+                    newPasswordBytes[i] = bt1[i];
+                } else {
+                    newPasswordBytes[i] = (byte) 0xff;
+                }
+            }
+            XLog.i("新密码：" + MokoUtils.bytesToHexString(newPasswordBytes));
+            // 用旧密码加密新密码
+            byte[] newPasswordEncryptBytes = encrypt(newPasswordBytes, passwordBytes);
+            if (newPasswordEncryptBytes != null) {
+                SetLockStateTask task = new SetLockStateTask();
+                byte[] unLockBytes = new byte[newPasswordEncryptBytes.length + 1];
+                unLockBytes[0] = 0;
+                System.arraycopy(newPasswordEncryptBytes, 0, unLockBytes, 1, newPasswordEncryptBytes.length);
+                task.setData(unLockBytes);
+                return task;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @Description 获取解锁加密内容get unlock
+     */
+    public static OrderTask getUnLock() {
+        GetUnlockTask task = new GetUnlockTask();
+        return task;
+    }
+
+    private static byte[] passwordBytes;
+
+    /**
+     * @Description 解锁set unlock
+     */
+    public static OrderTask setUnLock(String password, byte[] value) {
+        byte[] bt1 = password.getBytes();
+        passwordBytes = new byte[16];
+        for (int i = 0; i < passwordBytes.length; i++) {
+            if (i < bt1.length) {
+                passwordBytes[i] = bt1[i];
+            } else {
+                passwordBytes[i] = (byte) 0xff;
+            }
+        }
+        XLog.i("密码：" + MokoUtils.bytesToHexString(passwordBytes));
+        byte[] unLockBytes = encrypt(value, passwordBytes);
+        if (unLockBytes != null) {
+            SetUnlockTask task = new SetUnlockTask();
+            task.setData(unLockBytes);
+            return task;
+        }
+        return null;
+    }
+
+    /**
+     * @Date 2018/1/22
+     * @Author wenzheng.liu
+     * @Description 加密
+     */
+    public static byte[] encrypt(byte[] value, byte[] password) {
+        try {
+            SecretKeySpec key = new SecretKeySpec(password, "AES");// 转换为AES专用密钥
+            Cipher cipher = Cipher.getInstance("AES");// 创建密码器
+            cipher.init(Cipher.ENCRYPT_MODE, key);// 初始化为加密模式的密码器
+            byte[] result = cipher.doFinal(value);// 加密
+            byte[] data = Arrays.copyOf(result, 16);
+            return data;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    /**
+     * @Description 获取电池电量
+     */
+    public static OrderTask getBattery() {
+        GetBatteryTask task = new GetBatteryTask();
+        return task;
+    }
 
     /**
      * 获取制造商
@@ -64,41 +191,33 @@ public class OrderTaskAssembler {
         return task;
     }
 
-    public static OrderTask getAxisParams() {
+    public static OrderTask getSamplingInterval() {
         ParamsTask task = new ParamsTask();
-        task.getData(ParamsKeyEnum.KEY_AXIS_PARAMS);
+        task.getData(ParamsKeyEnum.KEY_READ_SAMPLING_INTERVAL);
         return task;
     }
 
-    public static OrderTask setAxisParams(@IntRange(from = 0, to = 4) int rate,
-                                          @IntRange(from = 0, to = 3) int scale,
-                                          @IntRange(from = 1, to = 255) int sensitivity) {
+    public static OrderTask setSamplingInterval(@IntRange(from = 1, to = 65535) int interval) {
         ParamsTask task = new ParamsTask();
-        task.setAxisParams(rate, scale, sensitivity);
+        task.setSamplingInterval(interval);
         return task;
     }
 
-    public static OrderTask setNewPassword(String password) {
-        PasswordTask task = new PasswordTask();
-        task.setNewPassword(password);
+    public static OrderTask getDetectionInterval() {
+        ParamsTask task = new ParamsTask();
+        task.getData(ParamsKeyEnum.KEY_READ_DETECTION_INTERVAL);
         return task;
     }
+
+    public static OrderTask setDetectionInterval(@IntRange(from = 1, to = 86400) int interval) {
+        ParamsTask task = new ParamsTask();
+        task.setDetectionInterval(interval);
+        return task;
+    }
+
 
     public static OrderTask resetDevice() {
-        ParamsTask task = new ParamsTask();
-        task.setData(ParamsKeyEnum.KEY_RESET);
-        return task;
-    }
-
-    public static OrderTask getPowerSavingStaticTriggerTime() {
-        ParamsTask task = new ParamsTask();
-        task.getData(ParamsKeyEnum.KEY_POWER_SAVING_STATIC_TRIGGER_TIME);
-        return task;
-    }
-
-    public static OrderTask setPowerSavingStaticTriggerTime(@IntRange(from = 0, to = 65535) int time) {
-        ParamsTask task = new ParamsTask();
-        task.setPowerSavingStaticTriggerTime(time);
+        ResetDeviceTask task = new ResetDeviceTask();
         return task;
     }
 
@@ -108,63 +227,90 @@ public class OrderTaskAssembler {
         return task;
     }
 
-    public static OrderTask getVerifyPasswordEnable() {
-        PasswordTask task = new PasswordTask();
-        task.setData(ParamsKeyEnum.KEY_VERIFY_PASSWORD_ENABLE);
+    public static OrderTask getAdvInterval() {
+        GetAdvIntervalTask task = new GetAdvIntervalTask();
         return task;
     }
 
-    public static OrderTask getNormalAdvParams() {
+    public static OrderTask setAdvInterval(byte[] data) {
+        SetAdvIntervalTask task = new SetAdvIntervalTask();
+        task.setData(data);
+        return task;
+    }
+
+    public static OrderTask getTxPower() {
+        GetTxPowerTask task = new GetTxPowerTask();
+        return task;
+    }
+
+    public static OrderTask setTxPower(byte[] data) {
+        SetTxPowerTask task = new SetTxPowerTask();
+        task.setData(data);
+        return task;
+    }
+
+
+    public static OrderTask getSlotData() {
+        GetAdvSlotDataTask task = new GetAdvSlotDataTask();
+        return task;
+    }
+
+
+    public static OrderTask setSlotData(byte[] data) {
+        SetAdvSlotDataTask task = new SetAdvSlotDataTask();
+        task.setData(data);
+        return task;
+    }
+
+
+    public static OrderTask getConnectable() {
+        GetConnectableTask task = new GetConnectableTask();
+        return task;
+    }
+
+
+    public static OrderTask setConnectable(int enable) {
+        SetConnectableTask task = new SetConnectableTask();
+        task.setData(MokoUtils.toByteArray(enable, 1));
+        return task;
+    }
+
+
+    public static OrderTask getButtonPower() {
         ParamsTask task = new ParamsTask();
-        task.getData(ParamsKeyEnum.KEY_NORMAL_ADV_PARAMS);
+        task.getData(ParamsKeyEnum.GET_BUTTON_POWER);
         return task;
     }
 
-    public static OrderTask getButtonTriggerParams() {
+
+    public static OrderTask setButtonPower(int enable) {
         ParamsTask task = new ParamsTask();
-        task.getData(ParamsKeyEnum.KEY_BUTTON_TRIGGER_PARAMS);
+        task.setButtonPower(enable);
         return task;
     }
 
-    public static OrderTask getTriggerLedStatus() {
+    public static OrderTask getHWResetEnable() {
         ParamsTask task = new ParamsTask();
-        task.getData(ParamsKeyEnum.KEY_TRIGGER_LED_STATUS);
+        task.getData(ParamsKeyEnum.GET_HW_RESET_ENABLE);
         return task;
     }
 
-    public static OrderTask getBattery() {
+    public static OrderTask setHWResetEnable(int enable) {
         ParamsTask task = new ParamsTask();
-        task.getData(ParamsKeyEnum.KEY_BATTERY_VOLTAGE);
+        task.setHWResetEnable(enable);
         return task;
     }
 
-    public static OrderTask setVerifyPasswordEnable(@IntRange(from = 0, to = 1) int enable) {
-        PasswordTask task = new PasswordTask();
-        task.setVerifyPasswordEnable(enable);
-        return task;
-    }
-
-    public static OrderTask setPassword(String password) {
-        PasswordTask task = new PasswordTask();
-        task.setPassword(password);
-        return task;
-    }
-
-    public static OrderTask setNormalAdvParams(int advInterval, int txPower, int advDuration, int standByDuration, int advChannel) {
+    public static OrderTask getTriggerLEDNotifyEnable() {
         ParamsTask task = new ParamsTask();
-        task.setNormalAdvParams(advInterval, txPower, advDuration, standByDuration, advChannel);
+        task.getData(ParamsKeyEnum.GET_TRIGGER_LED_NOTIFICATION);
         return task;
     }
 
-    public static OrderTask setButtonTriggerParams(int advInterval, int txPower, int advDuration, int triggerType) {
-        ParamsTask task = new ParamsTask();
-        task.setButtonTriggerParams(advInterval, txPower, advDuration, triggerType);
-        return task;
-    }
 
-    public static OrderTask setTriggerLedStatus(@IntRange(from = 0, to = 1) int enable) {
+    public static OrderTask setTriggerLEDNotifyEnable(int enable) {
         ParamsTask task = new ParamsTask();
-        task.setTriggerLedStatus(enable);
+        task.setTriggerLEDNotifyEnable(enable);
         return task;
     }
 
