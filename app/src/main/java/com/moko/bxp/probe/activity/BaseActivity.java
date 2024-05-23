@@ -52,6 +52,18 @@ public class BaseActivity extends FragmentActivity {
         }
     }
 
+    protected long mToastTime = 0;
+
+    public boolean isToastLocked() {
+        long current = SystemClock.elapsedRealtime();
+        if (current - mToastTime > 500) {
+            mToastTime = current;
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     public boolean isWriteStoragePermissionOpen() {
         return ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED;
     }

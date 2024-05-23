@@ -1,6 +1,7 @@
 package com.moko.bxp.probe.activity;
 
 import android.os.Bundle;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.SeekBar;
@@ -30,6 +31,7 @@ import java.util.Locale;
 
 public class AdvConfigActivity extends BaseActivity implements SeekBar.OnSeekBarChangeListener {
     private ActivityAdvConfigProbeBinding mBind;
+    private final String FILTER_ASCII = "[ -~]*";
 
     private boolean mSavedParamsError;
 
@@ -38,6 +40,14 @@ public class AdvConfigActivity extends BaseActivity implements SeekBar.OnSeekBar
         super.onCreate(savedInstanceState);
         mBind = ActivityAdvConfigProbeBinding.inflate(getLayoutInflater());
         setContentView(mBind.getRoot());
+        InputFilter filter = (source, start, end, dest, dstart, dend) -> {
+            if (!(source + "").matches(FILTER_ASCII)) {
+                return "";
+            }
+
+            return null;
+        };
+        mBind.etAdvName.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10), filter});
         EventBus.getDefault().register(this);
         showSyncingProgressDialog();
         mBind.sbTxPower.setOnSeekBarChangeListener(this);

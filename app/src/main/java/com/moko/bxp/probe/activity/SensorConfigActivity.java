@@ -3,8 +3,6 @@ package com.moko.bxp.probe.activity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 
 import com.moko.ble.lib.MokoConstants;
 import com.moko.ble.lib.event.ConnectStatusEvent;
@@ -12,7 +10,6 @@ import com.moko.ble.lib.event.OrderTaskResponseEvent;
 import com.moko.ble.lib.task.OrderTask;
 import com.moko.ble.lib.task.OrderTaskResponse;
 import com.moko.ble.lib.utils.MokoUtils;
-import com.moko.bxp.probe.R;
 import com.moko.bxp.probe.databinding.ActivitySensorConfigProbeBinding;
 import com.moko.bxp.probe.dialog.LoadingMessageDialog;
 import com.moko.bxp.probe.utils.ToastUtils;
@@ -94,10 +91,11 @@ public class SensorConfigActivity extends BaseActivity {
 //                                break;
                             case KEY_WRITE_SAMPLING_INTERVAL:
                             case KEY_WRITE_DETECTION_INTERVAL:
+                                if (isToastLocked()) return;
                                 ToastUtils.showToast(this, "Success!");
                                 break;
                             case SET_ERROR:
-                                if (isWindowLocked()) return;
+                                if (isToastLocked()) return;
                                 ToastUtils.showToast(this, "Failed");
                                 break;
                         }

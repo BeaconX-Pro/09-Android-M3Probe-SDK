@@ -375,7 +375,7 @@ public class DeviceInfoActivity extends BaseActivity implements RadioGroup.OnChe
                     .show(sensorFragment)
                     .commit();
         }
-        mBind.tvTitle.setText("ADVERTISEMENT");
+        mBind.tvTitle.setText("SENSOR");
     }
 
     private void showSettingFragment() {

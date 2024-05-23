@@ -74,6 +74,14 @@ public class Utils {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                     Uri fileUri = IOUtils.insertDownloadFile(context, files[i]);
                     uris.add(fileUri);
+                } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    Uri uri;
+                    if (BuildConfig.IS_LIBRARY) {
+                        uri = FileProvider.getUriForFile(context, "com.moko.bxp.button.fileprovider", files[0]);
+                    } else {
+                        uri = FileProvider.getUriForFile(context, "com.moko.bxp.button.probe.fileprovider", files[0]);
+                    }
+                    uris.add(uri);
                 } else {
                     uris.add(Uri.fromFile(files[i]));
                 }
