@@ -60,7 +60,7 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <service android:name="com.moko.bxp.probe.service.DfuService" />
+        <service android:name="com.moko.bxp.probe.service.DfuServiceProbe" />
 
     </application>
 

@@ -39,11 +39,15 @@ import com.moko.bxp.probe.dialog.ModifyPasswordDialog;
 import com.moko.bxp.probe.fragment.SensorFragment;
 import com.moko.bxp.probe.fragment.DeviceFragment;
 import com.moko.bxp.probe.fragment.SettingFragment;
-import com.moko.bxp.probe.service.DfuService;
+import com.moko.bxp.probe.service.DfuServiceProbe;
 import com.moko.bxp.probe.utils.FileUtils;
 import com.moko.bxp.probe.utils.ToastUtils;
 import com.moko.support.probe.ProbeMokoSupport;
 import com.moko.support.probe.OrderTaskAssembler;
+import com.moko.support.probe.dfu.DfuProgressListener;
+import com.moko.support.probe.dfu.DfuProgressListenerAdapter;
+import com.moko.support.probe.dfu.DfuServiceInitiator;
+import com.moko.support.probe.dfu.DfuServiceListenerHelper;
 import com.moko.support.probe.entity.OrderCHAR;
 import com.moko.support.probe.entity.ParamsKeyEnum;
 
@@ -55,11 +59,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import no.nordicsemi.android.dfu.DfuProgressListener;
-import no.nordicsemi.android.dfu.DfuProgressListenerAdapter;
-import no.nordicsemi.android.dfu.DfuServiceInitiator;
-import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
 
 public class DeviceInfoActivity extends BaseActivity implements RadioGroup.OnCheckedChangeListener {
     public static final int REQUEST_CODE_SELECT_FIRMWARE = 0x10;
@@ -310,7 +309,7 @@ public class DeviceInfoActivity extends BaseActivity implements RadioGroup.OnChe
                             .setKeepBond(false)
                             .setDisableNotification(true);
                     starter.setZip(null, firmwareFilePath);
-                    starter.start(this, DfuService.class);
+                    starter.start(this, DfuServiceProbe.class);
                     showDFUProgressDialog("Waiting...");
                 } else {
                     Toast.makeText(this, "file is not exists!", Toast.LENGTH_SHORT).show();
@@ -558,8 +557,8 @@ public class DeviceInfoActivity extends BaseActivity implements RadioGroup.OnChe
                 ToastUtils.showToast(DeviceInfoActivity.this, "Error:DFU Failed");
                 ProbeMokoSupport.getInstance().disConnectBle();
                 final LocalBroadcastManager manager = LocalBroadcastManager.getInstance(DeviceInfoActivity.this);
-                final Intent abortAction = new Intent(DfuService.BROADCAST_ACTION);
-                abortAction.putExtra(DfuService.EXTRA_ACTION, DfuService.ACTION_ABORT);
+                final Intent abortAction = new Intent(DfuServiceProbe.BROADCAST_ACTION);
+                abortAction.putExtra(DfuServiceProbe.EXTRA_ACTION, DfuServiceProbe.ACTION_ABORT);
                 manager.sendBroadcast(abortAction);
             }
         }
