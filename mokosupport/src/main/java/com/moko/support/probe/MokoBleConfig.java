@@ -17,6 +17,8 @@ import com.moko.support.probe.entity.OrderServices;
 
 import java.util.UUID;
 
+import no.nordicsemi.android.ble.callback.SuccessCallback;
+
 final class MokoBleConfig extends MokoBleManager {
 
     private MokoResponseCallback mMokoResponseCallback;
@@ -26,6 +28,7 @@ final class MokoBleConfig extends MokoBleManager {
     private BluetoothGattCharacteristic thCharacteristic;
     private BluetoothGattCharacteristic waterLeakCharacteristic;
     private BluetoothGattCharacteristic tempCharacteristic;
+    private BluetoothGatt gatt;
 
     public MokoBleConfig(@NonNull Context context, MokoResponseCallback callback) {
         super(context);
@@ -33,8 +36,9 @@ final class MokoBleConfig extends MokoBleManager {
     }
 
     @Override
-    public boolean init(BluetoothGatt gatt) {
+    public boolean checkServiceCharacteristicSupported(BluetoothGatt bluetoothGatt) {
         final BluetoothGattService service = gatt.getService(OrderServices.SERVICE_CUSTOM.getUuid());
+        this.gatt = bluetoothGatt;
         if (service != null) {
             paramsCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_PARAMS.getUuid());
             paramsResultCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_PARAMS_RESULT.getUuid());
@@ -42,10 +46,7 @@ final class MokoBleConfig extends MokoBleManager {
             thCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_TH_NOTIFY.getUuid());
             waterLeakCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_WATER_LEAK_NOTIFY.getUuid());
             tempCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_TEMP_NOTIFY.getUuid());
-            enableParamsNotify();
-            enableParamsResultNotify();
-            enableDisconnectNotify();
-            return true;
+            return null != paramsCharacteristic && null != paramsResultCharacteristic && null != disconnectCharacteristic;
         }
         return false;
     }
@@ -61,10 +62,12 @@ final class MokoBleConfig extends MokoBleManager {
     }
 
     @Override
-    public void discovered(BluetoothGatt gatt, BluetoothGattCharacteristic characteristic) {
-        UUID lastCharacteristicUUID = characteristic.getUuid();
-        if (disconnectCharacteristic.getUuid().equals(lastCharacteristicUUID))
-            mMokoResponseCallback.onServicesDiscovered(gatt);
+    public void init() {
+        requestMtu(240).done(device -> {
+            enableParamsNotify();
+            enableParamsResultNotify();
+            enableDisconnectNotify();
+        }).enqueue();
     }
 
     @Override
@@ -133,7 +136,7 @@ final class MokoBleConfig extends MokoBleManager {
             XLog.e("device to app : " + MokoUtils.bytesToHexString(value));
             mMokoResponseCallback.onCharacteristicChanged(disconnectCharacteristic, value);
         });
-        enableNotifications(disconnectCharacteristic).enqueue();
+        enableNotifications(disconnectCharacteristic).done(device -> mMokoResponseCallback.onServicesDiscovered(gatt)).enqueue();
     }
 
     public void disableDisconnectNotify() {
