@@ -26,7 +26,7 @@ import androidx.core.content.ContextCompat;
  * @Date 2017/12/7 0007
  * @Author wenzheng.liu
  * @Description
- * @ClassPath com.moko.bxp.button.probe.activity.GuideActivity
+ * @ClassPath com.moko.bxp.probe.activity.GuideActivity
  */
 public class GuideActivity extends BaseActivity {
     @Override

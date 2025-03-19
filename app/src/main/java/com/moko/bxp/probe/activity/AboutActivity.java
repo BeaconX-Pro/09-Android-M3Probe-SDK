@@ -27,6 +27,7 @@ public class AboutActivity extends BaseActivity {
         setContentView(mBind.getRoot());
         if (!BuildConfig.IS_LIBRARY) {
             mBind.appVersion.setText(String.format("Version:V%s", Utils.getVersionInfo(this)));
+            mBind.tvFeedbackLog.setVisibility(View.VISIBLE);
         }
         mBind.tvCompanyWebsite.getPaint().setFlags(Paint.UNDERLINE_TEXT_FLAG);
     }
@@ -47,16 +48,16 @@ public class AboutActivity extends BaseActivity {
     public void onFeedback(View view) {
         if (isWindowLocked())
             return;
-        File trackerLog = new File(ProbeMainActivity.PATH_LOGCAT + File.separator + (BuildConfig.IS_LIBRARY ? "mokoBeaconXPro.txt" : "M3Probe.txt"));
-        File trackerLogBak = new File(ProbeMainActivity.PATH_LOGCAT + File.separator + (BuildConfig.IS_LIBRARY ? "mokoBeaconXPro.txt.bak" : "M3Probe.txt.bak"));
-        File trackerCrashLog = new File(ProbeMainActivity.PATH_LOGCAT + File.separator + (BuildConfig.IS_LIBRARY ? "crash_log.txt" : "d_crash_log.txt"));
+        File trackerLog = new File(ProbeMainActivity.PATH_LOGCAT + File.separator + "M3Probe.txt");
+        File trackerLogBak = new File(ProbeMainActivity.PATH_LOGCAT + File.separator + "M3Probe.txt.bak");
+        File trackerCrashLog = new File(ProbeMainActivity.PATH_LOGCAT + File.separator + "crash_log.txt");
         if (!trackerLog.exists() || !trackerLog.canRead()) {
             ToastUtils.showToast(this, "File is not exists!");
             return;
         }
         XLog.i("333333mail=" + trackerLog.getPath());
         String address = "Development@mokotechnology.com";
-        StringBuilder mailContent = new StringBuilder("MKButtonD_");
+        StringBuilder mailContent = new StringBuilder("M3Probe_");
         Calendar calendar = Calendar.getInstance();
         String date = Utils.calendar2strDate(calendar, "yyyyMMdd");
         mailContent.append(date);

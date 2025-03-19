@@ -27,7 +27,7 @@ public class BaseApplication extends Application {
     private static final String TAG = "M3Probe";
     private static final String LOG_FILE = "M3Probe.txt";
     private static final String LOG_FOLDER = "M3Probe";
-    public static String PATH_LOGCAT;
+    private static String PATH_LOGCAT;
 
     @Override
     public void onCreate() {

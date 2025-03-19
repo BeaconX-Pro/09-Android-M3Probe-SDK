@@ -1,4 +1,4 @@
-# BeaconXPro Android SDK Guide（English）
+# M3Probe Android SDK Guide（English）
 
 ## Intro
 
@@ -17,31 +17,31 @@ We divide the communications between SDK and devices into three stages: Scanning
 
 ### 1.Scanning stage
 
-**`probe.MokoBleScanner`**
+**`com.moko.support.probe.MokoBleScanner`**
 
 Scanning processing class, support to open scan, close scan and get the raw data of the scanned device.
 
-**`probe.callback.MokoScanDeviceCallback`**
+**`com.moko.support.probe.callback.MokoScanDeviceCallback`**
 
 Scanning callback interface,this interface can be used to obtain the scan status and device data.
 
-**`probe.service.DeviceInfoParseable`**
+**`com.moko.support.probe.service.DeviceInfoParseable`**
 
 Parsed data interface,this interface can parsed the device broadcast frame, get the specific data. the implementation can refer to `BeaconXInfoParseableImpl` in the project,the `DeviceInfo` will be parsed to `BeaconXInfo`.
 
-**`com.moko.bxp.button.d.utils.BeaconXParser`**
+**`com.moko.bxp.probe.utils.BeaconXParser`**
 
 Parsed data utils class, use this class to convert `BeaconXInfo.ValidData` to UID, URL, TLM, IBeacon, T&H, 3-Axis.
 
 ### 2.Connection stage
 
-**`probe.AOAMokoSupport`**
+**`com.moko.support.probe.ProbeMokoSupport`**
 
 BLE operation core class, extends from `Mokoblelib`.It can connect the device, disconnect the device, send the device connection status, turn on Bluetooth, turn off Bluetooth, judge whether Bluetooth is on or not, receive data from the device and send data to the device, notify the page data update, turn on and off characteristic notification.
 
 ### 3.Communication stage
 
-**`probe.OrderTaskAssembler`**
+**`com.moko.support.probe.OrderTaskAssembler`**
 
 We assemble read data and write data to `OrderTask`, send the task to the device through `DMokoSupport`, and receive the resopnse.
 

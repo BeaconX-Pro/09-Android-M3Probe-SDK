@@ -6,12 +6,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.moko.bxp.probe.databinding.FragmentSensorBinding;
+import com.moko.bxp.probe.databinding.FragmentSensorProbeBinding;
 
 import androidx.fragment.app.FragmentActivity;
 
 public class SensorFragment extends Fragment {
-    private FragmentSensorBinding mBind;
+    private FragmentSensorProbeBinding mBind;
 
     private FragmentActivity activity;
 
@@ -24,7 +24,7 @@ public class SensorFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        mBind = FragmentSensorBinding.inflate(inflater, container, false);
+        mBind = FragmentSensorProbeBinding.inflate(inflater, container, false);
         activity = (FragmentActivity) getActivity();
         return mBind.getRoot();
     }
