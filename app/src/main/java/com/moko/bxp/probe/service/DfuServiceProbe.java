@@ -23,7 +23,8 @@ package com.moko.bxp.probe.service;
 
 import android.app.Activity;
 
-import com.moko.support.probe.dfu.DfuBaseService;
+import no.nordicsemi.android.dfu.DfuBaseService;
+
 
 public class DfuServiceProbe extends DfuBaseService {
 

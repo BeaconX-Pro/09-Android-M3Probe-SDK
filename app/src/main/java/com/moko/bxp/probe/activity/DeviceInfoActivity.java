@@ -44,10 +44,10 @@ import com.moko.bxp.probe.utils.FileUtils;
 import com.moko.bxp.probe.utils.ToastUtils;
 import com.moko.support.probe.ProbeMokoSupport;
 import com.moko.support.probe.OrderTaskAssembler;
-import com.moko.support.probe.dfu.DfuProgressListener;
-import com.moko.support.probe.dfu.DfuProgressListenerAdapter;
-import com.moko.support.probe.dfu.DfuServiceInitiator;
-import com.moko.support.probe.dfu.DfuServiceListenerHelper;
+import no.nordicsemi.android.dfu.DfuProgressListener;
+import no.nordicsemi.android.dfu.DfuProgressListenerAdapter;
+import no.nordicsemi.android.dfu.DfuServiceInitiator;
+import no.nordicsemi.android.dfu.DfuServiceListenerHelper;
 import com.moko.support.probe.entity.OrderCHAR;
 import com.moko.support.probe.entity.ParamsKeyEnum;
 
