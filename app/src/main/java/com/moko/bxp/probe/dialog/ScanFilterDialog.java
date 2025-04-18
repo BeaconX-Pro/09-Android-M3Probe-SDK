@@ -5,6 +5,7 @@ import android.text.TextUtils;
 import android.widget.SeekBar;
 
 import com.moko.bxp.probe.databinding.DialogScanFilterProbeBinding;
+import com.moko.lib.bxpui.dialog.BaseDialog;
 
 public class ScanFilterDialog extends BaseDialog<DialogScanFilterProbeBinding> {
     private int filterRssi;

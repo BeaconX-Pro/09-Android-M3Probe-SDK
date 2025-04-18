@@ -13,7 +13,7 @@ import com.moko.ble.lib.task.OrderTask;
 import com.moko.ble.lib.task.OrderTaskResponse;
 import com.moko.ble.lib.utils.MokoUtils;
 import com.moko.bxp.probe.databinding.ActivityAdvConfigProbeBinding;
-import com.moko.bxp.probe.dialog.LoadingMessageDialog;
+import com.moko.lib.bxpui.dialog.LoadingMessageDialog;
 import com.moko.bxp.probe.utils.ToastUtils;
 import com.moko.support.probe.OrderTaskAssembler;
 import com.moko.support.probe.ProbeMokoSupport;
