@@ -37,9 +37,9 @@ final class MokoBleConfig extends MokoBleManager {
 
     @Override
     public boolean checkServiceCharacteristicSupported(BluetoothGatt bluetoothGatt) {
-        final BluetoothGattService service = gatt.getService(OrderServices.SERVICE_CUSTOM.getUuid());
-        this.gatt = bluetoothGatt;
+        final BluetoothGattService service = bluetoothGatt.getService(OrderServices.SERVICE_CUSTOM.getUuid());
         if (service != null) {
+            this.gatt = bluetoothGatt;
             paramsCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_PARAMS.getUuid());
             paramsResultCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_PARAMS_RESULT.getUuid());
             disconnectCharacteristic = service.getCharacteristic(OrderCHAR.CHAR_DISCONNECT.getUuid());
